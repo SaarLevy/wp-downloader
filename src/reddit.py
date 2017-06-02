@@ -11,23 +11,30 @@ reddit = praw.Reddit(client_id= cr['id'],
                      user_agent= 'Downloads wallpapers from r/wallpapers')
 
 
-def crawl_sub(subreddit):  
-    links = [{}]  
+def get_links_from_sub(subreddit):  
+    links = []  
     wp_subreddit = reddit.subreddit(subreddit)
     for s in wp_subreddit.hot(limit=20):
-        temp = {"url": s.url, "id": s.id}
-        links.append(url.s)
+        links.appends(s.url)
     return links
 
 
-def download_image(item, path):
-    if 'i.reddi.it' in item['url']:
-        r = requests.get(item['url'], stream=True)
-        with open(item['id'], 'wb') as out_file:
-            shutil.copyfileobj(r.raw, out_file)
-        del r
+def download_image(url, path):
+    r = requests.get(url, stream=True)
+    with open(path, 'wb') as out_file:
+        shutil.copyfileobj(r.raw, out_file)
+    del r
+    
 
-    elif 'imgur' in item:
-        imgur.get_links(item['url'])
-
-
+def crawl_reddit(*subreddits):
+    for sub in subreddits:
+        links = get_links_from_sub(sub)
+        for url in links:
+            #Nearly all of Reddit's picture submissions are hosted on their host or on imgur. So special use-cases were created for them
+            if "i.redd.it" in url:
+                download_image(url)
+            elif "imgur" in url:
+                imgur_links = imgur.get_links(url) # Many imgur submission are albums, so this is necessary
+                for i in imgur_links:
+                    download_image(i)
+                
