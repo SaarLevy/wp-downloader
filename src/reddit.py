@@ -2,7 +2,7 @@ import praw
 import requests
 import os
 import imgur
-import shutil
+from downloader.py import download_image
 from config import reddit as cr # Not commited
 
 reddit = praw.Reddit(client_id= cr['id'],
@@ -19,11 +19,6 @@ def get_links_from_sub(subreddit):
     return links
 
 
-def download_image(url, path):
-    r = requests.get(url, stream=True)
-    with open(path, 'wb') as out_file:
-        shutil.copyfileobj(r.raw, out_file)
-    del r
     
 
 def crawl_reddit(*subreddits):
@@ -35,6 +30,6 @@ def crawl_reddit(*subreddits):
                 download_image(url)
             elif "imgur" in url:
                 imgur_links = imgur.get_links(url) # Many imgur submission are albums, so this is necessary
-                for i in imgur_links:
-                    download_image(i)
+                for url in imgur_links:
+                    download_image(url)
                 
